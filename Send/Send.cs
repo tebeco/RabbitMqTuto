@@ -19,7 +19,9 @@ namespace Send
             using (var connection = connectionFactory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: "hello", durable: false, exclusive: false, autoDelete: false, arguments: null);
+                channel.QueueDeclare(queue: "hello", durable: true, exclusive: false, autoDelete: false, arguments: null);
+                var properties = channel.CreateBasicProperties();
+                properties.Persistent = true;
 
                 var itemIndex = 0;
                 var delay = TimeSpan.FromMilliseconds(700);
@@ -29,13 +31,8 @@ namespace Send
                     string message = $"[{itemIndex++:d3}] Hello World!";
                     var body = Encoding.UTF8.GetBytes(message);
 
-                    channel.BasicPublish(exchange: "", routingKey: "hello", basicProperties: null, body: body);
+                    channel.BasicPublish(exchange: "", routingKey: "hello", basicProperties: properties, body: body);
                     Console.WriteLine(" [x] Sent {0}", message);
-
-
-
-
-
 
 
                     await Task.Delay(delay, ct).ContinueWith(tsk => { });
